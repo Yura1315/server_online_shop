@@ -1,7 +1,9 @@
 import * as hapi from '@hapi/hapi';
+import * as path from 'path';
 import dotenv from 'dotenv';
 import * as AuthBearer from 'hapi-auth-bearer-token';
-import * as path from 'path';
+import makeAdminAuth from './auth/adminAuth';
+import makeUserAuth from './auth/userAuth';
 import routes from './routes';
 
 dotenv.config({
@@ -24,6 +26,7 @@ const plugins: any[] = [
     AuthBearer
 ]
 
+
 srv.register(plugins).then(() => {
     srv.route(routes);
 
@@ -34,14 +37,5 @@ srv.register(plugins).then(() => {
     })
 })
 
-srv.auth.strategy('admin', 'bearer-access-token', {
-    validate: (req: hapi.Request, token, h: hapi.ResponseToolkit) => {
-        console.log('in validate', token)
-        const isValid = process.env.ADMIN_TOKEN == token
-        return {
-            isValid,
-            credentials: {},
-            artifacts: {}
-        }
-    }
-});
+makeAdminAuth(srv)
+makeUserAuth(srv)

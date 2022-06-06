@@ -1,5 +1,6 @@
 import * as hapi from '@hapi/hapi' 
 import Boom from '@hapi/boom'
+import database from './database/connection';
 import { v4 as uuidv4 } from 'uuid';
 import { generateHash } from './helpers'
 
@@ -11,14 +12,16 @@ const users: any[] = [
 ]
 
 export default {
-    auth: (req: hapi.Request, h: hapi.ResponseToolkit) => {
+    auth: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
         try {
+            //req.auth.credentials
             const {email, password} = req.payload as {email: string, password: string}
             //Поиск в БД пользователя
-            const searchUser = users.find((user) => user.email === email);
-            console.log(searchUser);
+            const foundUser = await database.user.findOne({email})
+            // const searchUser = users.find((user) => user.email === email);
+            console.log(foundUser);
             return {
-                searchUser
+                foundUser
             }
         } catch (error) {
             console.log(error)
@@ -44,8 +47,8 @@ export default {
         users.push(user)
         // console.log(users);
         return h.response(user.token);
-        } catch (error) {
-            console.log(error);
+        } catch (e) {
+            return Boom.badImplementation('Произошла ошибка при регистрации')
         }
     }
 

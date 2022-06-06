@@ -32,8 +32,8 @@ export default [
         options: {
             validate: {
                 payload: joi.object({
-                    email: joi.string().required,
-                    password: joi.string().required
+                    email: joi.string().required(),
+                    password: joi.string().required()
                 })
             }
         }
