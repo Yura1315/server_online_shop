@@ -4,7 +4,7 @@ import userSchema from './userSchema';
 
 const host = process.env.MONGO_HOST || 'localhost';
 const port = process.env.MONGO_PORT || 27017;
-const dbName = 'dataBaseShop';
+const dbName = 'datbaseShop';
 
 const uri = `mongodb://${host}:${port}/${dbName}`;
 

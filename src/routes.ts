@@ -1,4 +1,4 @@
-import * as hapi from '@hapi/hapi' 
+import * as hapi from '@hapi/hapi'
 import joi from 'joi';
 import controlers from './controlers';
 
@@ -7,7 +7,7 @@ export default [
     {
         method: 'GET',
         path: '/',
-        handler:  (req: hapi.Request) => {
+        handler: (req: hapi.Request) => {
             return 'product';
         }
     },
@@ -18,9 +18,10 @@ export default [
         options: {
             validate: {
                 payload: joi.object({
+                    name: joi.string().required(),
                     email: joi.string().email().required(),
+                    phone: joi.string().required(),
                     password: joi.string().required(),
-                    phone: joi.string().required()
                 })
             }
         }
@@ -34,8 +35,8 @@ export default [
                 payload: joi.object({
                     email: joi.string().required(),
                     password: joi.string().required()
-                })
-            }
+                }),
+            },
         }
     },
     {
@@ -51,6 +52,16 @@ export default [
             auth: {
                 strategy: 'admin'
             }
-        } 
+        }
     },
+    {
+        method: 'GET',
+        path: '/auth-two',
+        handler: controlers.auth2,
+        options: {
+            auth: {
+                strategy: 'user'
+            }
+        }
+    }
 ]
