@@ -3,7 +3,7 @@ import joi from 'joi';
 import controlers from './controlers';
 
 
-export default [
+const routes: hapi.ServerRoute[] = [
     {
         method: 'GET',
         path: '/',
@@ -45,12 +45,14 @@ export default [
         handler: (req: hapi.Request, h: hapi.ResponseToolkit) => {
             return {
                 name: 'vasya',
-                surname: 'pupkin'
+                surname: 'pupkin',
+                isAdmin: true,
             }
         },
         options: {
             auth: {
-                strategy: 'admin'
+                strategy: 'admin',
+                // scope: ['admin']
             }
         }
     },
@@ -65,3 +67,5 @@ export default [
         }
     }
 ]
+
+export default routes;

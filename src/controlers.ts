@@ -21,13 +21,13 @@ export default {
             return Boom.badImplementation('Произошла ошибка при авторизации, попробуйте позднее')
         }
     },
-    auth2: (req: hapi.Request, h: hapi.ResponseToolkit) => {
+    auth2: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
         try {
             const fUser = req.auth.credentials;
             console.log(fUser)
             return h.response(fUser);
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     },
     reg: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
@@ -35,19 +35,21 @@ export default {
             const { email, password, phone, name } = req.payload as { email: string, password: string, phone: string, name: string }
             const alreadyRegistered = await database.user.findOne({ email })
             if (alreadyRegistered) {
-                return Boom.badRequest('Данный пользователь уже зарегистрирован');
+                const err = Boom.badRequest('Данный пользователь уже зарегистрирован');
+                return h.response(err.output)
+            } else {
+                const user = {
+                    name,
+                    email,
+                    password: generateHash(password),
+                    phone,
+                    userId: uuidv4(),
+                    token: uuidv4(),
+                }
+                await database.user.create(user)
+                const res = { name: user.name, token: user.token, email: user.email, phone: user.phone, userId: user.userId }
+                return h.response(res);
             }
-            const passwordHash = generateHash(password);
-            const user = {
-                name,
-                email,
-                password: passwordHash,
-                phone,
-                userId: uuidv4(),
-                token: uuidv4(),
-            }
-            await database.user.create(user)
-            return h.response(user);
         } catch (e) {
             return Boom.badImplementation('Произошла ошибка при регистрации, попробуйте позже')
         }
