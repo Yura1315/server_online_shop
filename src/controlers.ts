@@ -1,3 +1,4 @@
+import { Location } from 'hapi-geo-locate';
 import * as hapi from "@hapi/hapi";
 import Boom from "@hapi/boom";
 import database from "./database/connection";
@@ -29,15 +30,6 @@ export default {
 			);
 		}
 	},
-	// auth2: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-	// 	try {
-	// 		const fUser = req.auth.credentials;
-	// 		console.log(fUser);
-	// 		return h.response(fUser);
-	// 	} catch (e) {
-	// 		console.log(e);
-	// 	}
-	// },
 	reg: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
 		try {
 			const { email, password, phone, name } = req.payload as {
@@ -61,6 +53,7 @@ export default {
 					middleName: "",
 					lastName: "",
 					gender: "",
+					cart: []
 				};
 				await database.user.create(user);
 				const res = {
@@ -69,6 +62,7 @@ export default {
 					email: user.email,
 					phone: user.phone,
 					userId: user.userId,
+					cart: user.cart
 				};
 				return h.response(res);
 			}
@@ -112,9 +106,9 @@ export default {
 			console.log(err);
 		}
 	},
-	products: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
+	popularProducts: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
 		try {
-			const products = await database.products.find({}, { _id: 0 });
+			const products = await database.products.find({}, { _id: 0 }).sort({ bought: -1 }).limit(8);
 			return h.response(products);
 		} catch (err) {
 			console.log(err);
@@ -194,4 +188,37 @@ export default {
 			return Boom.unauthorized("Пользователь не авторизован");
 		}
 	},
+	getUserCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
+		const user = req.auth.credentials;
+		try {
+			return user.cart
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	addCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
+		const { email, productId } = req.payload as { email: string, productId: string }
+		const guestIp = req.info.remoteAddress
+		try {
+			if (!email) {
+				const guest = await database.guestCart.findOne({ guestIp })
+				if (!guest) {
+					const guestUser = {
+						guestIp: req.info.remoteAddress,
+						guestId: uuidv4(),
+						guestCart: [productId]
+					}
+					return guestUser
+				}
+				const guestCart = await database.guestCart.updateOne({ guestIp }, { $push: { guestCart: productId } })
+				return 'ok'
+			} else {
+				await database.user.updateOne({ email }, { $push: { cart: productId } })
+				const user = await database.user.findOne({ email });
+				return user?.cart
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
 };

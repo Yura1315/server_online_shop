@@ -12,6 +12,7 @@ interface Iuser {
 	birthDay: string;
 	lastName: string;
 	middleName: string;
+	cart: [string]
 }
 
 const schema = new mongoose.Schema<Iuser>(
@@ -55,6 +56,10 @@ const schema = new mongoose.Schema<Iuser>(
 		middleName: {
 			type: mongoose.Schema.Types.String,
 		},
+		cart: {
+			type: mongoose.Schema.Types.Array,
+			required: false
+		}
 	},
 	{
 		timestamps: true,

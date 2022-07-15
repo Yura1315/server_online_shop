@@ -2,6 +2,7 @@ import { options } from "joi";
 import mongoose from "mongoose";
 import userSchema from "./userSchema";
 import productsSchema from "./productsSchema";
+import guestCartSchema from './guestCartSchema';
 
 const host = process.env.MONGO_HOST || "localhost";
 const port = process.env.MONGO_PORT || 27017;
@@ -22,8 +23,10 @@ db.once("open", () => {
 
 const user = mongoose.model("user", userSchema);
 const products = mongoose.model("products", productsSchema);
+const guestCart = mongoose.model("guestCart", guestCartSchema);
 
 export default {
 	user,
 	products,
+	guestCart
 };

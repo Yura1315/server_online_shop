@@ -50,12 +50,12 @@ const routes: hapi.ServerRoute[] = [
 	},
 	{
 		method: "GET",
-		path: "/catalog",
-		handler: controlers.products,
+		path: "/popular",
+		handler: controlers.popularProducts,
 	},
 	{
 		method: "GET",
-		path: "/catalogs/{category*}",
+		path: "/catalog/{category}",
 		handler: controlers.getProductsPage,
 	},
 	{
@@ -104,6 +104,21 @@ const routes: hapi.ServerRoute[] = [
 			},
 		},
 	},
+	{
+		method: "GET",
+		path: '/cart',
+		options: {
+			auth: {
+				strategy: 'user'
+			}
+		},
+		handler: controlers.getUserCart
+	},
+	{
+		method: "PUT",
+		path: '/addCart',
+		handler: controlers.addCart
+	}
 ];
 
 export default routes;

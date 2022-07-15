@@ -27,7 +27,7 @@ const srv = hapi.server({
 
 
 const plugins: any[] = [
-    AuthBearer
+    AuthBearer,
 ]
 
 
