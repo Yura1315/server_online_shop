@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 interface IguestCart {
   guestIp: string
   guestId: string
-  guestCart: [string]
+  guestCart: any[]
 }
 
 const schema = new mongoose.Schema<IguestCart>({
