@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { generateHash } from "./helpers";
 import { Query } from "mongoose";
 import { alternatives } from 'joi';
+import { title } from 'process';
 
 export default {
 	auth: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
@@ -189,20 +190,8 @@ export default {
 			return Boom.unauthorized("Пользователь не авторизован");
 		}
 	},
-	getUserCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		try {
-			const user = await database.user.findOne({ token: req.params.user })
-			if (user) {
-				return user.cart
-			}
-			const guest = await database.guestCart.findOne({ guestIp: req.info.remoteAddress })
-			return guest?.guestCart
-		} catch (err) {
-			console.log(err);
-		}
-	},
 	addCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const { email, cart } = req.payload as { email: string, cart: { productId: string, count: number, title: string, price: number, alt: string, src: [string], article: string } }
+		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: string, category: [string], char: [string], descr: string, bought: number } }
 		const guestIp = req.info.remoteAddress
 		try {
 			if (!email) {
@@ -216,9 +205,9 @@ export default {
 					await database.guestCart.create(guestUser);
 					return guestUser
 				} else if (guest) {
-					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { productId: cart.productId } } })
+					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { productId: cart._id } } })
 					if (allreadyCartGuest) {
-						await database.guestCart.updateOne({ "guestCart.productId": cart.productId }, { $set: { "guestCart.$.count": cart.count } })
+						await database.guestCart.updateOne({ "guestCart._id": cart._id }, { $set: { "guestCart.$.count": cart.count } })
 						const guest = await database.guestCart.findOne({ guestIp })
 						return guest?.guestCart
 					} else {
@@ -228,10 +217,11 @@ export default {
 					}
 				}
 			} else if (email) {
-				const allreadyCart = await database.user.findOne({ email, cart: { $elemMatch: { productId: cart.productId } } })
+				const allreadyCart = await database.user.findOne({ email, cart: { $elemMatch: { _id: cart._id } } })
 				if (allreadyCart) {
-					await database.user.updateOne({ "cart.productId": cart.productId }, { $set: { "cart.$.count": cart.count } })
+					await database.user.updateOne({ "cart._id": cart._id }, { $set: { "cart.$.count": cart.count } })
 					const user = await database.user.findOne({ email });
+					console.log(user?.cart)
 					return user?.cart
 				}
 			}
