@@ -108,6 +108,11 @@ const routes: hapi.ServerRoute[] = [
 		method: "PUT",
 		path: '/addCart',
 		handler: controlers.addCart
+	},
+	{
+		method: 'PUT',
+		path: '/delCart',
+		handler: controlers.delCart
 	}
 ];
 

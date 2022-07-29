@@ -7,6 +7,7 @@ import { generateHash } from "./helpers";
 import { Query } from "mongoose";
 import { alternatives } from 'joi';
 import { title } from 'process';
+import { CallTracker } from 'assert';
 
 export default {
 	auth: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
@@ -191,7 +192,7 @@ export default {
 		}
 	},
 	addCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: string, category: [string], char: [string], descr: string, bought: number } }
+		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: number, category: [string], char: [string], descr: string, bought: number } }
 		const guestIp = req.info.remoteAddress
 		try {
 			if (!email) {
@@ -228,6 +229,34 @@ export default {
 			await database.user.updateOne({ email }, { $push: { cart: cart } })
 			const user = await database.user.findOne({ email });
 			return user?.cart
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	delCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
+		const { email, product } = req.payload as { email: string, product: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: string, category: [string], char: [string], descr: string, bought: number } }
+		const guestIp = req.info.remoteAddress
+		try {
+			if (!email) {
+				const guest = await database.guestCart.findOne({ guestIp })
+				if (guest) {
+					await database.guestCart.updateOne({ guestIp }, { $pull: { guestCart: product } })
+					const newGuestCart = await database.guestCart.findOne({ guestIp });
+					return newGuestCart?.guestCart
+				} else {
+					return Boom.internal('Неожиданная ошибка');
+				}
+			} else if (email) {
+				const user = await database.user.findOne({ email })
+				console.log(user)
+				if (user) {
+					await database.user.updateOne({ email }, { $pull: { cart: product } })
+					const newCart = await database.user.findOne({ email });
+					return newCart?.cart
+				} else {
+					return Boom.internal('Неожиданная ошибка')
+				}
+			}
 		} catch (err) {
 			console.log(err);
 		}
