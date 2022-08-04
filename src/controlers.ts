@@ -111,7 +111,7 @@ export default {
 	},
 	popularProducts: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
 		try {
-			const products = await database.products.find({}, { _id: 0 }).sort({ bought: -1 }).limit(8);
+			const products = await database.products.find({}).sort({ bought: -1 }).limit(8);
 			return h.response(products);
 		} catch (err) {
 			console.log(err);
@@ -248,7 +248,6 @@ export default {
 				}
 			} else if (email) {
 				const user = await database.user.findOne({ email })
-				console.log(user)
 				if (user) {
 					await database.user.updateOne({ email }, { $pull: { cart: product } })
 					const newCart = await database.user.findOne({ email });
