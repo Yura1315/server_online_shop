@@ -44,6 +44,7 @@ const routes: hapi.ServerRoute[] = [
 				payload: joi.object({
 					email: joi.string().required(),
 					password: joi.string().required(),
+					cartInfo: joi.array(),
 				}),
 			},
 		},
