@@ -21,6 +21,7 @@ const routes: hapi.ServerRoute[] = [
 					email: joi.string().email().required(),
 					phone: joi.string().required(),
 					password: joi.string().required(),
+					cart: joi.array()
 				}),
 			},
 		},

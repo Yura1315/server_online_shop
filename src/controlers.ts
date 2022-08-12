@@ -13,7 +13,6 @@ export default {
 				password: string;
 				cartInfo: any[];
 			};
-			console.log(cartInfo)
 			//Поиск в БД пользователя
 			const foundUser = await database.user.findOne({ email });
 			if (!foundUser) {
@@ -27,7 +26,14 @@ export default {
 			if (cartInfo) {
 				const guestIp = req.info.remoteAddress
 				const guestCart = await database.guestCart.findOne({ guestIp });
+				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
 				const userCart = await database.user.findOne({ email })
+				if (!userCart?.cart.length) {
+					await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
+					await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+					const user = await database.user.findOne({ email })
+					return user
+				}
 				const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
 				await database.user.updateOne({ email }, { $set: { cart: [] } })
 				await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
@@ -43,16 +49,45 @@ export default {
 	},
 	reg: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
 		try {
-			const { email, password, phone, name } = req.payload as {
+			const { email, password, phone, name, cart } = req.payload as {
 				email: string;
 				password: string;
 				phone: string;
 				name: string;
+				cart: any[]
 			};
+			const guestIp = req.info.remoteAddress
 			const alreadyRegistered = await database.user.findOne({ email });
+			const guest = await database.guestCart.findOne({ guestIp })
 			if (alreadyRegistered) {
 				const err = Boom.badRequest("Данный email уже зарегистрирован");
 				return h.response(err.output);
+			}
+			if (!cart.length) {
+				const user = {
+					name,
+					email,
+					password: generateHash(password),
+					phone,
+					userId: uuidv4(),
+					token: uuidv4(),
+					middleName: "",
+					lastName: "",
+					gender: "",
+					cart: [],
+					whishList: []
+				};
+				await database.user.create(user);
+				const res = {
+					name: user.name,
+					token: user.token,
+					email: user.email,
+					phone: user.phone,
+					userId: user.userId,
+					cart: user.cart,
+					whishList: user.whishList
+				};
+				return h.response(res);
 			} else {
 				const user = {
 					name,
@@ -64,16 +99,19 @@ export default {
 					middleName: "",
 					lastName: "",
 					gender: "",
-					cart: []
+					cart: [...cart],
+					whishList: []
 				};
 				await database.user.create(user);
+				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } })
 				const res = {
 					name: user.name,
 					token: user.token,
 					email: user.email,
 					phone: user.phone,
 					userId: user.userId,
-					cart: user.cart
+					cart: user.cart,
+					whishList: user.whishList
 				};
 				return h.response(res);
 			}
