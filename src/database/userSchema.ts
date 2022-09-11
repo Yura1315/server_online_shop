@@ -7,12 +7,12 @@ interface Iuser {
 	password: string;
 	phone?: string;
 	token: string;
-	whishList?: [string];
-	boughtList?: [string];
+	whishList?: string[];
+	boughtList?: string[];
 	birthDay: string;
 	lastName: string;
 	middleName: string;
-	cart: [string]
+	cart: any[]
 }
 
 const schema = new mongoose.Schema<Iuser>(
@@ -38,11 +38,11 @@ const schema = new mongoose.Schema<Iuser>(
 			default: uuidv4,
 		},
 		whishList: {
-			type: mongoose.Schema.Types.Array,
+			type: mongoose.Schema.Types.Mixed,
 			required: false,
 		},
 		boughtList: {
-			type: mongoose.Schema.Types.Array,
+			type: mongoose.Schema.Types.Mixed,
 			required: false,
 		},
 		birthDay: {
@@ -57,7 +57,7 @@ const schema = new mongoose.Schema<Iuser>(
 			type: mongoose.Schema.Types.String,
 		},
 		cart: {
-			type: mongoose.Schema.Types.Array,
+			type: mongoose.Schema.Types.Mixed,
 			required: false
 		}
 	},

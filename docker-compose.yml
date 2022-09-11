@@ -1,0 +1,21 @@
+version: "3"
+services:
+       online-store:
+           container_name: online-store
+           image: yura/online-store
+           restart: always
+           build: .
+           ports:
+             - "5000:5000"
+           links:
+             - mongo
+       mongo:
+             container_name: mongo
+             image: mongo
+             volumes:
+               - ./data:/data/db
+             ports:
+                - '27017:27017'
+             environment:
+                - MONGO_PASSWORD=admin
+                - MONGO_USER=admin

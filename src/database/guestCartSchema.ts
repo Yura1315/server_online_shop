@@ -16,7 +16,7 @@ const schema = new mongoose.Schema<IguestCart>({
     required: true
   },
   guestCart: {
-    type: mongoose.Schema.Types.Array,
+    type: mongoose.Schema.Types.Mixed,
     required: false
   }
 })

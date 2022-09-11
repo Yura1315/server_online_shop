@@ -4,8 +4,8 @@ interface Iproducts {
 	id: number;
 	title: string;
 	alt: string;
-	category: [string];
-	src: [string];
+	category: string[];
+	src: string[];
 	char: any[];
 	descr: string;
 	price: number;
@@ -27,15 +27,15 @@ const schema = new mongoose.Schema<Iproducts>({
 		required: true,
 	},
 	category: {
-		type: mongoose.Schema.Types.Array,
+		type: mongoose.Schema.Types.Mixed,
 		required: true,
 	},
 	src: {
-		type: mongoose.Schema.Types.Array,
+		type: mongoose.Schema.Types.Mixed,
 		required: true,
 	},
 	char: {
-		type: mongoose.Schema.Types.Array,
+		type: mongoose.Schema.Types.Mixed,
 		required: true,
 	},
 	descr: {

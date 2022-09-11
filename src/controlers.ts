@@ -237,7 +237,7 @@ export default {
 		}
 	},
 	addCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: number, category: [string], char: [string], descr: string, bought: number } }
+		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: string[], article: number, id: number, category: string[], char: any[], descr: string, bought: number } }
 		const guestIp = req.info.remoteAddress
 		try {
 			if (!email) {
@@ -246,10 +246,10 @@ export default {
 					const guestUser = {
 						guestIp: req.info.remoteAddress,
 						guestId: uuidv4(),
-						guestCart: cart
+						guestCart: [cart]
 					}
 					await database.guestCart.create(guestUser);
-					return guestUser
+					return guestUser.guestCart
 				} else if (guest) {
 					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { _id: cart._id } } })
 					if (allreadyCartGuest) {
