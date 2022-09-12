@@ -1,4 +1,3 @@
-import { Location } from 'hapi-geo-locate';
 import * as hapi from "@hapi/hapi";
 import Boom from "@hapi/boom";
 import database from "./database/connection";
@@ -13,7 +12,7 @@ export default {
 				password: string;
 				cartInfo: any[];
 			};
-			//Поиск в БД пользователя
+			// Поиск в БД пользователя
 			const foundUser = await database.user.findOne({ email });
 			if (!foundUser) {
 				const errEmail = Boom.badRequest("Не удалось найти пользователя");
@@ -23,24 +22,33 @@ export default {
 				const errPass = Boom.badRequest("Неверный пароль");
 				return h.response(errPass.output);
 			}
-			if (cartInfo) {
-				const guestIp = req.info.remoteAddress
-				const guestCart = await database.guestCart.findOne({ guestIp });
-				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-				const userCart = await database.user.findOne({ email })
-				if (!userCart?.cart.length) {
-					await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
-					await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-					const user = await database.user.findOne({ email })
-					return user
-				}
-				const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
-				await database.user.updateOne({ email }, { $set: { cart: [] } })
-				await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
-				const user = await database.user.findOne({ email })
-				return user
-			}
-			return h.response(foundUser);
+			const newCart = assignCart(foundUser.cart, cartInfo);
+			const guestIp = req.info.remoteAddress;
+			await database.user.updateOne({ email: email }, { $set: { cart: [] } });
+			await database.user.updateOne({ email: email }, { $set: { cart: [...newCart] } });
+			await database.guestCart.updateOne({ guestIp: guestIp }, { $set: { guestCart: [] } });
+			const user = await database.user.findOne({ email })
+			return user
+
+
+			// if (cartInfo.length > 0) {
+			// 	const guestIp = req.info.remoteAddress
+			// 	const guestCart = await database.guestCart.findOne({ guestIp });
+			// 	// await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+			// 	const userCart = await database.user.findOne({ email })
+			// 	if (!userCart?.cart.length) {
+			// 		await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
+			// 		await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+			// 		const user = await database.user.findOne({ email })
+			// 		return user
+			// 	}
+			// 	const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
+			// 	await database.user.updateOne({ email }, { $set: { cart: [] } })
+			// 	await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
+			// 	const user = await database.user.findOne({ email })
+			// 	return user
+			// }
+			// return foundUser;
 		} catch (error) {
 			return Boom.badImplementation(
 				"Произошла ошибка при авторизации, попробуйте позднее"
@@ -54,7 +62,7 @@ export default {
 				password: string;
 				phone: string;
 				name: string;
-				cart: any[]
+				cart: any[];
 			};
 			const guestIp = req.info.remoteAddress
 			const alreadyRegistered = await database.user.findOne({ email });
@@ -75,7 +83,8 @@ export default {
 					lastName: "",
 					gender: "",
 					cart: [],
-					whishList: []
+					whishList: [],
+					birthDay: '',
 				};
 				await database.user.create(user);
 				const res = {
@@ -85,7 +94,11 @@ export default {
 					phone: user.phone,
 					userId: user.userId,
 					cart: user.cart,
-					whishList: user.whishList
+					whishList: user.whishList,
+					birthDay: user.birthDay,
+					gender: user.gender,
+					middleName: user.middleName,
+					lastName: user.lastName
 				};
 				return h.response(res);
 			} else {
@@ -99,6 +112,7 @@ export default {
 					middleName: "",
 					lastName: "",
 					gender: "",
+					birthDay: "",
 					cart: [...cart],
 					whishList: []
 				};

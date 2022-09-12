@@ -15,7 +15,7 @@ const srv = hapi.server({
     port: 5000,
     routes: {
         cors: {
-            origin: ['*']
+            origin: ['*'],
         },
         validate: {
             failAction: (req, h, err) => {
