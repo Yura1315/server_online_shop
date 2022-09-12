@@ -16,6 +16,3 @@ services:
                - ./data:/data/db
              ports:
                 - '27017:27017'
-             environment:
-                - MONGO_PASSWORD=admin
-                - MONGO_USER=admin
