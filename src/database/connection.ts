@@ -7,7 +7,9 @@ const host = process.env.MONGO_HOST || "localhost";
 const port = process.env.MONGO_PORT || 27018;
 const dbName = "datbaseShop";
 
-const uri = `mongodb://172.18.0.2:27017/${dbName}`;
+// const uri = `mongodb://172.18.0.2:27017/${dbName}`;
+const uri = `mongodb://${host}:${port}/${dbName}`;
+
 
 mongoose.connect(uri);
 
