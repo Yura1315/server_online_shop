@@ -3,6 +3,8 @@
 
 Технологии: TypeScript, nodeJs(HapiJs), MongoDb, Docker.
 
+Используется не именованный том база дынных в docker, так как в базе уже есть данные. База в папке /data 
+
 Установить локально:
 1. docker-compose up -d
 
