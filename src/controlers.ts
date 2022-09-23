@@ -22,33 +22,32 @@ export default {
 				const errPass = Boom.badRequest("Неверный пароль");
 				return h.response(errPass.output);
 			}
-			const newCart = assignCart(foundUser.cart, cartInfo);
-			const guestIp = req.info.remoteAddress;
-			await database.user.updateOne({ email: email }, { $set: { cart: [] } });
-			await database.user.updateOne({ email: email }, { $set: { cart: [...newCart] } });
-			await database.guestCart.updateOne({ guestIp: guestIp }, { $set: { guestCart: [] } });
-			const user = await database.user.findOne({ email })
-			return user
+			// const newCart = assignCart(foundUser.cart, cartInfo);
+			// const guestIp = req.info.remoteAddress;
+			// await database.user.updateOne({ email: email }, { $set: { cart: [] } });
+			// await database.user.updateOne({ email: email }, { $set: { cart: [...newCart] } });
+			// await database.guestCart.updateOne({ guestIp: guestIp }, { $set: { guestCart: [] } });
+			// const user = await database.user.findOne({ email })
+			// return user
 
-
-			// if (cartInfo.length > 0) {
-			// 	const guestIp = req.info.remoteAddress
-			// 	const guestCart = await database.guestCart.findOne({ guestIp });
-			// 	// await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-			// 	const userCart = await database.user.findOne({ email })
-			// 	if (!userCart?.cart.length) {
-			// 		await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
-			// 		await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-			// 		const user = await database.user.findOne({ email })
-			// 		return user
-			// 	}
-			// 	const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
-			// 	await database.user.updateOne({ email }, { $set: { cart: [] } })
-			// 	await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
-			// 	const user = await database.user.findOne({ email })
-			// 	return user
-			// }
-			// return foundUser;
+			if (cartInfo.length > 0) {
+				const guestIp = req.info.remoteAddress
+				const guestCart = await database.guestCart.findOne({ guestIp });
+				// await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+				const userCart = await database.user.findOne({ email })
+				if (!userCart?.cart.length) {
+					await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
+					await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+					const user = await database.user.findOne({ email })
+					return user
+				}
+				const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
+				await database.user.updateOne({ email }, { $set: { cart: [] } })
+				await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
+				const user = await database.user.findOne({ email })
+				return user
+			}
+			return foundUser;
 		} catch (error) {
 			return Boom.badImplementation(
 				"Произошла ошибка при авторизации, попробуйте позднее"
