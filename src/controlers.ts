@@ -264,15 +264,15 @@ export default {
 					await database.guestCart.create(guestUser);
 					return guestUser.guestCart
 				} else if (guest) {
-					const allreadyCartGuest = await database.guestCart.findOne({ guestCart: { $elemMatch: { _id: cart._id } } })
+					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { _id: cart._id } } })
 					if (allreadyCartGuest) {
-						await database.guestCart.updateOne({ guestIp: guestIp, "guestCart._id": cart._id }, { $set: { "guestCart.$.count": cart.count } })
-						const guest = await database.guestCart.findOne({ guestIp })
-						return guest?.guestCart
+						await database.guestCart.updateOne({ guestIp, "guestCart._id": cart._id }, { $set: { "guestCart.$.count": cart.count } })
+						const guestRes = await database.guestCart.findOne({ guestIp })
+						return guestRes?.guestCart
 					} else {
 						await database.guestCart.updateOne({ guestIp }, { $push: { guestCart: cart } })
-						const guest = await database.guestCart.findOne({ guestIp })
-						return guest?.guestCart
+						const guestRes = await database.guestCart.findOne({ guestIp })
+						return guestRes?.guestCart
 					}
 				}
 			} else if (email) {
