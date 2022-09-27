@@ -3,6 +3,7 @@ import Boom from "@hapi/boom";
 import database from "./database/connection";
 import { v4 as uuidv4 } from "uuid";
 import { assignCart, generateHash } from "./helpers";
+import { userInfo } from "os";
 
 export default {
 	auth: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
@@ -31,21 +32,22 @@ export default {
 			// return user
 
 			if (cartInfo.length > 0) {
-				const guestIp = req.info.remoteAddress
+				const guestIp = req.info.remoteAddress;
 				const guestCart = await database.guestCart.findOne({ guestIp });
 				// await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-				const userCart = await database.user.findOne({ email })
+				const userCart = await database.user.findOne({ email });
 				if (!userCart?.cart.length) {
-					await database.user.updateOne({ email }, { $set: { cart: [...guestCart!.guestCart] } })
+					await database.user.updateOne({ email }, { $set: { cart: [ ...guestCart!.guestCart ] } });
 					await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
-					const user = await database.user.findOne({ email })
-					return user
+					const user = await database.user.findOne({ email });
+					return user;
 				}
-				const newCart = assignCart(userCart?.cart, guestCart?.guestCart)
-				await database.user.updateOne({ email }, { $set: { cart: [] } })
-				await database.user.updateOne({ email }, { $set: { cart: [...newCart] } })
-				const user = await database.user.findOne({ email })
-				return user
+				const newCart = assignCart(userCart?.cart, guestCart?.guestCart);
+				await database.user.updateOne({ email }, { $set: { cart: [] } });
+				await database.user.updateOne({ email }, { $set: { cart: [ ...newCart ] } });
+				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
+				const user = await database.user.findOne({ email });
+				return user;
 			}
 			return foundUser;
 		} catch (error) {
@@ -63,9 +65,9 @@ export default {
 				name: string;
 				cart: any[];
 			};
-			const guestIp = req.info.remoteAddress
+			const guestIp = req.info.remoteAddress;
 			const alreadyRegistered = await database.user.findOne({ email });
-			const guest = await database.guestCart.findOne({ guestIp })
+			const guest = await database.guestCart.findOne({ guestIp });
 			if (alreadyRegistered) {
 				const err = Boom.badRequest("Данный email уже зарегистрирован");
 				return h.response(err.output);
@@ -112,11 +114,11 @@ export default {
 					lastName: "",
 					gender: "",
 					birthDay: "",
-					cart: [...cart],
+					cart: [ ...cart ],
 					whishList: []
 				};
 				await database.user.create(user);
-				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } })
+				await database.guestCart.updateOne({ guestIp }, { $set: { guestCart: [] } });
 				const res = {
 					name: user.name,
 					token: user.token,
@@ -178,7 +180,7 @@ export default {
 	},
 	getProductsPage: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
 		const perPage = +req.query.perPage;
-		const category = req.params.category
+		const category = req.params.category;
 		const page = +req.query.page;
 		const firstIndex = page * perPage - perPage;
 		try {
@@ -189,10 +191,10 @@ export default {
 				totalCount: count,
 				perPage,
 				currentPage: page
-			}
-			return res
+			};
+			return res;
 		} catch (err) {
-			console.log(err)
+			console.log(err);
 		}
 	},
 	oneProduct: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
@@ -231,7 +233,7 @@ export default {
 		}
 	},
 	getWhishProducts: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const userToken = req.headers.authorization.split(" ")[1];
+		const userToken = req.headers.authorization.split(" ")[ 1 ];
 		try {
 			const userWhishlist = await database.products.find({
 				_id: { $in: req.auth.credentials.whishList },
@@ -250,71 +252,95 @@ export default {
 		}
 	},
 	addCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: string[], article: number, id: number, category: string[], char: any[], descr: string, bought: number } }
-		const guestIp = req.info.remoteAddress
+		const { email, cart } = req.payload as { email: string, cart: { _id: string, count: number, title: string, price: number, alt: string, src: string[], article: number, id: number, category: string[], char: any[], descr: string, bought: number; }; };
+		const guestIp = req.info.remoteAddress;
 		try {
 			if (!email) {
-				const guest = await database.guestCart.findOne({ guestIp })
+				const guest = await database.guestCart.findOne({ guestIp });
 				if (!guest) {
 					const guestUser = {
 						guestIp: req.info.remoteAddress,
 						guestId: uuidv4(),
-						guestCart: [cart]
-					}
+						guestCart: [ cart ]
+					};
 					await database.guestCart.create(guestUser);
-					return guestUser.guestCart
+					return guestUser.guestCart;
 				} else if (guest) {
-					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { _id: cart._id } } })
+					const allreadyCartGuest = await database.guestCart.findOne({ guestIp, guestCart: { $elemMatch: { _id: cart._id } } });
 					if (allreadyCartGuest) {
-						await database.guestCart.updateOne({ guestIp, "guestCart._id": cart._id }, { $set: { "guestCart.$.count": cart.count } })
-						const guestRes = await database.guestCart.findOne({ guestIp })
-						return guestRes?.guestCart
+						await database.guestCart.updateOne({ guestIp, "guestCart._id": cart._id }, { $set: { "guestCart.$.count": cart.count } });
+						const guestRes = await database.guestCart.findOne({ guestIp });
+						return guestRes?.guestCart;
 					} else {
-						await database.guestCart.updateOne({ guestIp }, { $push: { guestCart: cart } })
-						const guestRes = await database.guestCart.findOne({ guestIp })
-						return guestRes?.guestCart
+						await database.guestCart.updateOne({ guestIp }, { $push: { guestCart: cart } });
+						const guestRes = await database.guestCart.findOne({ guestIp });
+						return guestRes?.guestCart;
 					}
 				}
 			} else if (email) {
-				const allreadyCart = await database.user.findOne({ email, cart: { $elemMatch: { _id: cart._id } } })
+				const allreadyCart = await database.user.findOne({ email, cart: { $elemMatch: { _id: cart._id } } });
 				if (allreadyCart) {
-					await database.user.updateOne({ email: email, "cart._id": cart._id }, { $set: { "cart.$.count": cart.count } })
+					await database.user.updateOne({ email: email, "cart._id": cart._id }, { $set: { "cart.$.count": cart.count } });
 					const user = await database.user.findOne({ email });
-					return user?.cart
+					return user?.cart;
 				}
 			}
-			await database.user.updateOne({ email }, { $push: { cart: cart } })
+			await database.user.updateOne({ email }, { $push: { cart: cart } });
 			const user = await database.user.findOne({ email });
-			return user?.cart
+			return user?.cart;
 		} catch (err) {
 			console.log(err);
 		}
 	},
 	delCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
-		const { email, product } = req.payload as { email: string, product: { _id: string, count: number, title: string, price: number, alt: string, src: [string], article: string, id: string, category: [string], char: [string], descr: string, bought: number } }
-		const guestIp = req.info.remoteAddress
+		const { email, product } = req.payload as { email: string, product: { _id: string, count: number, title: string, price: number, alt: string, src: [ string ], article: string, id: string, category: [ string ], char: [ string ], descr: string, bought: number; }; };
+		const guestIp = req.info.remoteAddress;
 		try {
 			if (!email) {
-				const guest = await database.guestCart.findOne({ guestIp })
+				const guest = await database.guestCart.findOne({ guestIp });
 				if (guest) {
-					await database.guestCart.updateOne({ guestIp }, { $pull: { guestCart: product } })
+					await database.guestCart.updateOne({ guestIp }, { $pull: { guestCart: product } });
 					const newGuestCart = await database.guestCart.findOne({ guestIp });
-					return newGuestCart?.guestCart
+					return newGuestCart?.guestCart;
 				} else {
 					return Boom.internal('Неожиданная ошибка');
 				}
 			} else if (email) {
-				const user = await database.user.findOne({ email })
+				const user = await database.user.findOne({ email });
 				if (user) {
-					await database.user.updateOne({ email }, { $pull: { cart: product } })
+					await database.user.updateOne({ email }, { $pull: { cart: product } });
 					const newCart = await database.user.findOne({ email });
-					return newCart?.cart
+					return newCart?.cart;
 				} else {
-					return Boom.internal('Неожиданная ошибка')
+					return Boom.internal('Неожиданная ошибка');
 				}
 			}
 		} catch (err) {
 			console.log(err);
+		}
+	},
+	getCart: async (req: hapi.Request, h: hapi.ResponseToolkit) => {
+		const email = req.query.email;
+		const guestIp = req.info.remoteAddress;
+		const user = await database.user.findOne({ email: email });
+		try {
+			if (!user) {
+				const guest = await database.guestCart.findOne({ guestIp });
+				if (!guest) {
+					const guestUser = {
+						guestIp: req.info.remoteAddress,
+						guestId: uuidv4(),
+						guestCart: []
+					};
+					await database.guestCart.create(guestUser);
+					return guestUser.guestCart;
+				}
+				return guest?.guestCart;
+			} else {
+				return user.cart;
+			}
+		} catch (err) {
+			return Boom.badRequest('Плак, что то не то');
 		}
 	}
 };

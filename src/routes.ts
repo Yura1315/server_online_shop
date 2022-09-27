@@ -1,5 +1,5 @@
 import * as hapi from "@hapi/hapi";
-import joi from "joi";
+import joi, {optional} from "joi";
 import controlers from "./controlers";
 
 const routes: hapi.ServerRoute[] = [
@@ -115,6 +115,11 @@ const routes: hapi.ServerRoute[] = [
 		method: 'PUT',
 		path: '/delCart',
 		handler: controlers.delCart
+	},
+	{
+		method: "GET",
+		path: "/cart",
+		handler: controlers.getCart,
 	}
 ];
 
