@@ -5,7 +5,7 @@ import guestCartSchema from './guestCartSchema';
 
 const host = process.env.MONGO_HOST || "localhost";
 const port = process.env.MONGO_PORT || 27017;
-const dbName = "databaseShop";
+const dbName = "datbaseShop";
 
 const uri = `mongodb://127.0.0.1:27017/${dbName}`;
 
